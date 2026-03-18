@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiche Employé</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --border: #e2e0d8;
+    --text: #1a1916;
+    --text-muted: #8a8880;
+    --accent: #2d6a4f;
+    --accent-light: #e8f5ee;
+    --accent-hover: #235c43;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px 16px;
+  }
+
+  .container { width: 100%; max-width: 560px; }
+
+  .steps {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    background: var(--bg);
+    transition: all 0.2s;
+  }
+
+  .step.active .step-num { background: var(--accent); border-color: var(--accent); color: white; }
+  .step.done .step-num { background: var(--accent); border-color: var(--accent); color: white; }
+  .step.done .step-label, .step.active .step-label { color: var(--text); }
+  .step-divider { flex: 1; height: 1px; background: var(--border); margin: 0 10px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  .card-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }
+  .card-title { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
+  .card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .card-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+
+  label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  input, select, textarea {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 11px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8880' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 11px center;
+    padding-right: 30px;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+    background: white;
+  }
+
+  textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+
+  .toggle-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .toggle-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .toggle-btn.selected { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+  .range-wrap { display: flex; align-items: center; gap: 12px; }
+
+  input[type=range] {
+    flex: 1; height: 4px; padding: 0; border: none; border-radius: 2px;
+    background: linear-gradient(to right, var(--accent) 0%, var(--accent) var(--val, 55%), var(--border) var(--val, 55%), var(--border) 100%);
+    box-shadow: none; cursor: pointer;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2); cursor: pointer;
+  }
+
+  .range-val { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent); font-weight: 500; min-width: 50px; text-align: right; }
+
+  .tag-input-wrap {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 7px;
+    padding: 7px 9px; display: flex; flex-wrap: wrap; gap: 5px;
+    cursor: text; min-height: 38px; transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .tag-input-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); background: white; }
+
+  .tag {
+    background: #eef7f2; color: var(--accent); border: 1px solid #c3e6d1;
+    border-radius: 4px; padding: 1px 7px; font-size: 11px; font-weight: 500;
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  .tag-remove { cursor: pointer; opacity: 0.5; font-size: 13px; transition: opacity 0.1s; }
+  .tag-remove:hover { opacity: 1; }
+
+  .tag-input {
+    border: none; background: transparent; outline: none;
+    font-size: 12px; font-family: 'DM Sans', sans-serif;
+    color: var(--text); flex: 1; min-width: 60px; padding: 1px 3px;
+    box-shadow: none !important;
+  }
+
+  .hint { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .card-footer {
+    padding: 14px 24px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    background: #faf9f7;
+  }
+
+  .btn {
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    padding: 8px 18px; border-radius: 7px; border: none; cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--bg); color: var(--text); }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-hover); }
+
+  .step-panel { display: none; }
+  .step-panel.active { display: contents; }
+
+  .success-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 40px 24px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  .success-icon {
+    width: 48px; height: 48px; background: var(--accent-light); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px; font-size: 20px; color: var(--accent);
+    animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  @keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .success-title { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .success-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+
+  .summary { background: var(--bg); border-radius: 7px; padding: 14px; text-align: left; font-size: 12px; line-height: 1.8; }
+  .summary-row { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding: 3px 0; }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-key { color: var(--text-muted); }
+  .summary-val { font-weight: 500; font-family: 'DM Mono', monospace; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="steps" id="stepsBar">
+    <div class="step active" id="s1"><div class="step-num">1</div><span class="step-label">Identité</span></div>
+    <div class="step-divider"></div>
+    <div class="step" id="s2"><div class="step-num">2</div><span class="step-label">Contrat</span></div>
+    <div class="step-divider"></div>
+    <div class="step" id="s3"><div class="step-num">3</div><span class="step-label">Poste</span></div>
+  </div>
+
+  <div class="card" id="mainCard">
+
+    <!-- Step 1 -->
+    <div class="step-panel active" id="panel1">
+      <div class="card-header">
+        <div class="card-title">Informations personnelles</div>
+        <div class="card-sub">Identité et coordonnées de l'employé</div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="field"><label>Prénom</label><input type="text" placeholder="Sophie" value="Sophie"></div>
+          <div class="field"><label>Nom</label><input type="text" placeholder="Martin" value="Martin"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Date de naissance</label><input type="date" value="1992-04-15"></div>
+          <div class="field"><label>Nationalité</label>
+            <select>
+              <option selected>🇧🇪 Belge</option>
+              <option>🇫🇷 Française</option>
+              <option>🇳🇱 Néerlandaise</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Email professionnel</label><input type="email" value="s.martin@sbi.be"></div>
+        <div class="row">
+          <div class="field"><label>Téléphone</label><input type="tel" value="+32 478 22 33 44"></div>
+          <div class="field"><label>Ville</label><input type="text" value="Bruxelles"></div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span style="font-size:11px;color:var(--text-muted)">Étape 1 / 3</span>
+        <button class="btn btn-primary" onclick="goTo(2)">Continuer →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-panel" id="panel2">
+      <div class="card-header">
+        <div class="card-title">Informations contractuelles</div>
+        <div class="card-sub">Type de contrat et conditions d'emploi</div>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label>Type de contrat</label>
+          <div class="toggle-group" id="contratGroup">
+            <button class="toggle-btn selected" onclick="selectToggle(this,'contratGroup')">CDI</button>
+            <button class="toggle-btn" onclick="selectToggle(this,'contratGroup')">CDD</button>
+            <button class="toggle-btn" onclick="selectToggle(this,'contratGroup')">Freelance</button>
+            <button class="toggle-btn" onclick="selectToggle(this,'contratGroup')">Stage</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Date d'entrée</label><input type="date" value="2024-09-01"></div>
+          <div class="field"><label>Régime</label>
+            <select>
+              <option>Temps plein</option><option>4/5</option><option>Mi-temps</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Salaire brut (€/mois)</label>
+          <div class="range-wrap">
+            <input type="range" min="1500" max="8000" step="100" value="3200"
+              oninput="updateRange(this,'salaireVal')" style="--val:55%">
+            <span class="range-val" id="salaireVal">3 200 €</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Avantages</label>
+          <div class="toggle-group">
+            <button class="toggle-btn selected" onclick="multiToggle(this)">🚗 Voiture</button>
+            <button class="toggle-btn selected" onclick="multiToggle(this)">🍽 Chèques repas</button>
+            <button class="toggle-btn" onclick="multiToggle(this)">📱 GSM</button>
+            <button class="toggle-btn selected" onclick="multiToggle(this)">🚂 Transport</button>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-ghost" onclick="goTo(1)">← Retour</button>
+        <button class="btn btn-primary" onclick="goTo(3)">Continuer →</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-panel" id="panel3">
+      <div class="card-header">
+        <div class="card-title">Poste & équipe</div>
+        <div class="card-sub">Rôle, responsabilités et compétences</div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="field"><label>Intitulé du poste</label><input type="text" value="Consultante IA"></div>
+          <div class="field"><label>Département</label>
+            <select><option>Conseil & IA</option><option>Dev</option><option>Ops</option><option>Finance</option><option>RH</option></select>
+          </div>
+        </div>
+        <div class="field"><label>Manager direct</label>
+          <select><option>— Aucun —</option><option selected>Alexandre Dupont</option><option>Marie Lecomte</option></select>
+        </div>
+        <div class="field">
+          <label>Niveau</label>
+          <div class="toggle-group" id="niveauGroup">
+            <button class="toggle-btn" onclick="selectToggle(this,'niveauGroup')">Junior</button>
+            <button class="toggle-btn selected" onclick="selectToggle(this,'niveauGroup')">Médior</button>
+            <button class="toggle-btn" onclick="selectToggle(this,'niveauGroup')">Senior</button>
+            <button class="toggle-btn" onclick="selectToggle(this,'niveauGroup')">Lead</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Compétences clés</label>
+          <div class="tag-input-wrap" onclick="document.getElementById('tagInput').focus()">
+            <span class="tag">Python <span class="tag-remove" onclick="removeTag(this)">×</span></span>
+            <span class="tag">LLM <span class="tag-remove" onclick="removeTag(this)">×</span></span>
+            <span class="tag">Notion <span class="tag-remove" onclick="removeTag(this)">×</span></span>
+            <input class="tag-input" id="tagInput" placeholder="Ajouter..." onkeydown="handleTag(event)">
+          </div>
+          <span class="hint">Entrée pour valider</span>
+        </div>
+        <div class="field"><label>Notes d'onboarding</label>
+          <textarea>Prévoir laptop + badge dès J-1.</textarea>
+        </div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-ghost" onclick="goTo(2)">← Retour</button>
+        <button class="btn btn-primary" onclick="submitForm()">✓ Créer la fiche</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="success-card" id="successCard" style="display:none">
+    <div class="success-icon">✓</div>
+    <div class="success-title">Fiche créée avec succès !</div>
+    <div class="success-sub">La page Notion a été mise à jour.</div>
+    <div class="summary" id="summaryContent"></div>
+    <br>
+    <button class="btn btn-ghost" onclick="resetForm()">+ Nouvel employé</button>
+  </div>
+
+</div>
+<script>
+function goTo(step) {
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel' + step).classList.add('active');
+  document.querySelectorAll('.step').forEach((s, i) => {
+    s.classList.remove('active','done');
+    if (i+1 < step) s.classList.add('done');
+    if (i+1 === step) s.classList.add('active');
+  });
+}
+function selectToggle(btn, groupId) {
+  document.querySelectorAll('#'+groupId+' .toggle-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function multiToggle(btn) { btn.classList.toggle('selected'); }
+function updateRange(input, valId) {
+  const val = parseInt(input.value);
+  const pct = ((val-1500)/(8000-1500)*100).toFixed(0)+'%';
+  input.style.setProperty('--val', pct);
+  document.getElementById(valId).textContent = val.toLocaleString('fr-FR') + ' €';
+}
+function handleTag(e) {
+  if (e.key==='Enter' && e.target.value.trim()) {
+    const wrap = e.target.parentElement;
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.innerHTML = e.target.value.trim() + ' <span class="tag-remove" onclick="removeTag(this)">×</span>';
+    wrap.insertBefore(tag, e.target);
+    e.target.value = '';
+    e.preventDefault();
+  }
+}
+function removeTag(x) { x.parentElement.remove(); }
+function submitForm() {
+  document.getElementById('summaryContent').innerHTML = `
+    <div class="summary-row"><span class="summary-key">Nom</span><span class="summary-val">Sophie Martin</span></div>
+    <div class="summary-row"><span class="summary-key">Poste</span><span class="summary-val">Consultante IA — Conseil & IA</span></div>
+    <div class="summary-row"><span class="summary-key">Contrat</span><span class="summary-val">CDI · Médior</span></div>
+    <div class="summary-row"><span class="summary-key">Salaire</span><span class="summary-val">3 200 €/mois</span></div>
+  `;
+  document.getElementById('mainCard').style.display = 'none';
+  document.getElementById('stepsBar').style.display = 'none';
+  document.getElementById('successCard').style.display = 'block';
+}
+function resetForm() {
+  document.getElementById('mainCard').style.display = 'block';
+  document.getElementById('stepsBar').style.display = 'flex';
+  document.getElementById('successCard').style.display = 'none';
+  goTo(1);
+}
+</script>
+</body>
+</html>
